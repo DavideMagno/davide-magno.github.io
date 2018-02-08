@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>The CuRious Risk Manager</title>
+    <link>/</link>
+    <description>Recent content on The CuRious Risk Manager</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 29 Jan 2018 00:00:00 +0000</lastBuildDate>
+    
+        <atom:link href="/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Generate scenarios correlated to existing ones</title>
+      <link>/2018/01/generate-scenarios-correlated-to-existing-ones/</link>
+      <pubDate>Mon, 29 Jan 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/2018/01/generate-scenarios-correlated-to-existing-ones/</guid>
+      <description>&lt;p&gt;In quantitative finance we often look at simulations of some market risk factors like equity returns or interest rate changes.&lt;/p&gt;
+&lt;p&gt;There are many third party companies who specialize in the historical calibration of such variables and provide simulations of future expected outcomes to the companies who require them.&lt;/p&gt;
+&lt;p&gt;For example, let’s suppose that we receive the expected returns of the Google shares as per the following distribution&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# This modelling is given by the third party and in theory we don&amp;#39;t know it
+google &amp;lt;- rnorm(10000, mean = 0.01, sd = 0.20) %&amp;gt;% 
+  tibble(google_returns = .)
+
+ggplot(data = google, aes(x = google_returns)) + 
+  geom_density() +
+  scale_x_continuous(labels = percent) + 
+  labs(title = &amp;quot;Google Shares&amp;quot;,
+        subtitle = &amp;quot;One Year forward distribution&amp;quot;) +
+  xlab(&amp;quot;One year forward return&amp;quot;) + 
+  ylab(&amp;quot;Density&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/post/31_01_2018_simulations_files/figure-html/Google-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;We now want to simulate the distribution of another risk factor which is not provided by the third party but that is usefull for us. Let’s say it is the distribution of the Facebook shares which we imagine to:&lt;/p&gt;
+&lt;ol style=&#34;list-style-type: decimal&#34;&gt;
+&lt;li&gt;be distributed as a normal random variable&lt;/li&gt;
+&lt;li&gt;have a 5% expected return and&lt;/li&gt;
+&lt;li&gt;being quite volatile (30% annual volatility)&lt;/li&gt;
+&lt;li&gt;have the same number of points as the simulations provided by the third party (10000 points)&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;We model therefore the distribution as follows:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# This modelling is our internal one and we can therefore control it
+fb &amp;lt;- rnorm(10000, mean = 0.05, sd = 0.30) %&amp;gt;% 
+  tibble(fb_returns = .)
+
+ggplot(data = fb, aes(x = fb_returns)) + 
+  geom_density() +
+  scale_x_continuous(labels = percent) + 
+  labs(title = &amp;quot;Facebook Shares&amp;quot;,
+        subtitle = &amp;quot;One Year forward distribution&amp;quot;) +
+  xlab(&amp;quot;One year forward return&amp;quot;) + 
+  ylab(&amp;quot;Density&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/post/31_01_2018_simulations_files/figure-html/Facebook-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Let’s now look at the correlation between the two variables:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;Returns &amp;lt;- google %&amp;gt;% 
+  cbind(fb) %&amp;gt;% 
+  as.tibble()
+
+cor(Returns$fb_returns, Returns$google_returns)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## [1] 0.004776558&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/post/31_01_2018_simulations_files/figure-html/Correlation_graph-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;We can notice that performing the simple simulation doesn’t allow us to impose a correlation structure with the data provided by the third party provider.&lt;/p&gt;
+&lt;p&gt;How can we generate a random variable with a defined correlation to an existing one? A very elegant solution was provided by user &lt;strong&gt;whuber&lt;/strong&gt; at the following link &lt;a href=&#34;https://stats.stackexchange.com/a/313138&#34; class=&#34;uri&#34;&gt;https://stats.stackexchange.com/a/313138&lt;/a&gt; and by using the following function&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;complement &amp;lt;- function(y, rho, x) {
+  if (missing(x)) x &amp;lt;- rnorm(length(y)) # Optional: supply a default if `x` is not given
+  y.perp &amp;lt;- residuals(lm(x ~ y))
+  rho * sd(y.perp) * y + y.perp * sd(y) * sqrt(1 - rho^2)
+}&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;In this function &lt;em&gt;x&lt;/em&gt; is our Facebook uncorrelated scenario , &lt;em&gt;rho&lt;/em&gt; is the correlation level and &lt;em&gt;y&lt;/em&gt; is the Google scenario as provided by the third party.&lt;/p&gt;
+&lt;p&gt;We apply this function imposing an 80% correlation&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;Returns %&amp;lt;&amp;gt;%  
+  mutate(fb_correlated = complement(.$google_returns,0.8, .$fb_returns))
+
+cor(Returns$google_returns, Returns$fb_correlated)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## [1] 0.8&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/post/31_01_2018_simulations_files/figure-html/Add_Correlation_Graph-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;There is just one last thing to do: compare the distributions of the two Facebook simulations&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;Returns %&amp;gt;% 
+  select(contains(&amp;quot;fb&amp;quot;)) %&amp;gt;% 
+  gather(simulation_type, simulation_value) %&amp;gt;% 
+  ggplot(aes(x = simulation_value, colour = simulation_type)) +
+  geom_density() +
+  scale_x_continuous(labels = percent) + 
+  labs(title = &amp;quot;Facebook Shares&amp;#39; simulations&amp;quot;) +
+  xlab(&amp;quot;One year forward return&amp;quot;) + 
+  ylab(&amp;quot;Density&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/post/31_01_2018_simulations_files/figure-html/unnamed-chunk-1-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;We can notice that the marginal distribution of the correlated scenario is much different from the original one.&lt;/p&gt;
+&lt;p&gt;There is therefore one additional step before we finish: we need to rescale the marginal distribution.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;Rescaled_fb_correlated &amp;lt;- Returns %&amp;gt;%
+  select(contains(&amp;quot;correlated&amp;quot;)) %&amp;gt;%
+  scale() %&amp;gt;% 
+  multiply_by(0.3) %&amp;gt;% 
+  add(0.05)
+
+Returns %&amp;lt;&amp;gt;% 
+  mutate(fb_correlated_scaled = Rescaled_fb_correlated)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We can now check that the the marginals are comparable and that the correlation structure is still at the desired level&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;Returns %&amp;gt;% 
+  select(contains(&amp;quot;fb&amp;quot;)) %&amp;gt;% 
+  gather(simulation_type, simulation_value) %&amp;gt;% 
+  ggplot(aes(x = simulation_value, colour = simulation_type)) +
+  geom_density() +
+  scale_x_continuous(labels = percent) + 
+  labs(title = &amp;quot;Facebook Shares&amp;#39; simulations&amp;quot;) +
+  xlab(&amp;quot;One year forward return&amp;quot;) + 
+  ylab(&amp;quot;Density&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/post/31_01_2018_simulations_files/figure-html/unnamed-chunk-2-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;cor(Returns$google_returns, Returns$fb_correlated)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## [1] 0.8&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The new Facebook scenario is now both correlated and in line with the density we want.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>My first post</title>
+      <link>/2018/01/my-first-post/</link>
+      <pubDate>Mon, 22 Jan 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/2018/01/my-first-post/</guid>
+      <description>&lt;p&gt;Welcome to my blog! I have been working in Financial Risk Management for the last 10+ years in financial instiutions for both Funds and Insurance.&lt;/p&gt;
+&lt;p&gt;For the last two years I have started to code quite regularly in R and I have now decided to open my little blog to share any insight I will get during my studying.&lt;/p&gt;
+&lt;p&gt;I will write about risk management and financial applications.&lt;/p&gt;
+&lt;p&gt;Enough talking about me…let’s start! :-)&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

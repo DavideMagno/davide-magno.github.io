@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+
+<meta property="og:title" content="Generate scenarios correlated to existing ones" />
+<meta property="og:description" content="In quantitative finance we often look at simulations of some market risk factors like equity returns or interest rate changes.
+There are many third party companies who specialize in the historical calibration of such variables and provide simulations of future expected outcomes to the companies who require them.
+For example, let’s suppose that we receive the expected returns of the Google shares as per the following distribution
+# This modelling is given by the third party and in theory we don&#39;t know it google &lt;- rnorm(10000, mean = 0." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="/2018/01/generate-scenarios-correlated-to-existing-ones/" />
+
+
+
+<meta property="article:published_time" content="2018-01-29T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2018-01-29T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+
+<meta itemprop="name" content="Generate scenarios correlated to existing ones">
+<meta itemprop="description" content="In quantitative finance we often look at simulations of some market risk factors like equity returns or interest rate changes.
+There are many third party companies who specialize in the historical calibration of such variables and provide simulations of future expected outcomes to the companies who require them.
+For example, let’s suppose that we receive the expected returns of the Google shares as per the following distribution
+# This modelling is given by the third party and in theory we don&#39;t know it google &lt;- rnorm(10000, mean = 0.">
+
+
+<meta itemprop="datePublished" content="2018-01-29T00:00:00&#43;00:00" />
+<meta itemprop="dateModified" content="2018-01-29T00:00:00&#43;00:00" />
+<meta itemprop="wordCount" content="603">
+
+
+
+<meta itemprop="keywords" content="" />
+
+<meta name="twitter:card" content="summary"/><meta name="twitter:title" content="Generate scenarios correlated to existing ones"/>
+<meta name="twitter:description" content="In quantitative finance we often look at simulations of some market risk factors like equity returns or interest rate changes.
+There are many third party companies who specialize in the historical calibration of such variables and provide simulations of future expected outcomes to the companies who require them.
+For example, let’s suppose that we receive the expected returns of the Google shares as per the following distribution
+# This modelling is given by the third party and in theory we don&#39;t know it google &lt;- rnorm(10000, mean = 0."/>
+<meta name="twitter:site" content="@@Davide_Magno"/>
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.34" />
+
+
+    <base href="/">
+    <link rel="canonical" href="/2018/01/generate-scenarios-correlated-to-existing-ones/">
+    <title>Generate scenarios correlated to existing ones | The CuRious Risk Manager</title>
+
+    <!-- CSS -->
+    <link href="/css/app.css" rel="stylesheet">
+
+    
+
+    
+
+    
+    
+
+
+  </head>
+  <body>
+
+    <header class="nav">
+      <div class="top-bar">
+        <div class="row column">
+          <div class="top-bar-left">
+            <ul class="menu">
+              <li><a href="/">
+                  The CuRious Risk Manager
+                </a></li>
+            </ul>
+          </div>
+          <div class="top-bar-right">
+            <ul class="menu">
+              <li class=""><a href="/">
+                Home
+              </a></li>
+              
+                
+                  <li><a href="/categories/">
+                    Categories
+                  </a></li>
+                
+                  <li><a href="/tags/">
+                    Tags
+                  </a></li>
+                
+                  <li><a href="/">
+                    The CuRious Risk Manager
+                  </a></li>
+                
+              
+            </ul>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <header class="blog-header">
+      <div class="callout large">
+        <div class="row column text-center">
+          <h1>
+            <a href="/" rel="home">The CuRious Risk Manager</a>
+          </h1>
+          
+            <p>
+              Using R to understand quantitative finance
+            </p>
+          
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <div class="row" id="content">
+        <div class="medium-8 columns">
+          
+  
+
+
+  <div class="blog-post">
+    <h3>
+      <a href="/2018/01/generate-scenarios-correlated-to-existing-ones/">Generate scenarios correlated to existing ones</a>
+    </h3>
+    <div class="callout small">
+      <small>
+        <time datetime="2018-01-29T00:00:00Z">
+          29 Jan 2018
+        </time> by Davide Magno.
+        
+        
+        <br>
+        
+      </small>
+    </div>
+    <p>
+      <p>In quantitative finance we often look at simulations of some market risk factors like equity returns or interest rate changes.</p>
+<p>There are many third party companies who specialize in the historical calibration of such variables and provide simulations of future expected outcomes to the companies who require them.</p>
+<p>For example, let’s suppose that we receive the expected returns of the Google shares as per the following distribution</p>
+<pre class="r"><code># This modelling is given by the third party and in theory we don&#39;t know it
+google &lt;- rnorm(10000, mean = 0.01, sd = 0.20) %&gt;% 
+  tibble(google_returns = .)
+
+ggplot(data = google, aes(x = google_returns)) + 
+  geom_density() +
+  scale_x_continuous(labels = percent) + 
+  labs(title = &quot;Google Shares&quot;,
+        subtitle = &quot;One Year forward distribution&quot;) +
+  xlab(&quot;One year forward return&quot;) + 
+  ylab(&quot;Density&quot;)</code></pre>
+<p><img src="/post/31_01_2018_simulations_files/figure-html/Google-1.png" width="672" /></p>
+<p>We now want to simulate the distribution of another risk factor which is not provided by the third party but that is usefull for us. Let’s say it is the distribution of the Facebook shares which we imagine to:</p>
+<ol style="list-style-type: decimal">
+<li>be distributed as a normal random variable</li>
+<li>have a 5% expected return and</li>
+<li>being quite volatile (30% annual volatility)</li>
+<li>have the same number of points as the simulations provided by the third party (10000 points)</li>
+</ol>
+<p>We model therefore the distribution as follows:</p>
+<pre class="r"><code># This modelling is our internal one and we can therefore control it
+fb &lt;- rnorm(10000, mean = 0.05, sd = 0.30) %&gt;% 
+  tibble(fb_returns = .)
+
+ggplot(data = fb, aes(x = fb_returns)) + 
+  geom_density() +
+  scale_x_continuous(labels = percent) + 
+  labs(title = &quot;Facebook Shares&quot;,
+        subtitle = &quot;One Year forward distribution&quot;) +
+  xlab(&quot;One year forward return&quot;) + 
+  ylab(&quot;Density&quot;)</code></pre>
+<p><img src="/post/31_01_2018_simulations_files/figure-html/Facebook-1.png" width="672" /></p>
+<p>Let’s now look at the correlation between the two variables:</p>
+<pre class="r"><code>Returns &lt;- google %&gt;% 
+  cbind(fb) %&gt;% 
+  as.tibble()
+
+cor(Returns$fb_returns, Returns$google_returns)</code></pre>
+<pre><code>## [1] 0.004776558</code></pre>
+<p><img src="/post/31_01_2018_simulations_files/figure-html/Correlation_graph-1.png" width="672" /></p>
+<p>We can notice that performing the simple simulation doesn’t allow us to impose a correlation structure with the data provided by the third party provider.</p>
+<p>How can we generate a random variable with a defined correlation to an existing one? A very elegant solution was provided by user <strong>whuber</strong> at the following link <a href="https://stats.stackexchange.com/a/313138" class="uri">https://stats.stackexchange.com/a/313138</a> and by using the following function</p>
+<pre class="r"><code>complement &lt;- function(y, rho, x) {
+  if (missing(x)) x &lt;- rnorm(length(y)) # Optional: supply a default if `x` is not given
+  y.perp &lt;- residuals(lm(x ~ y))
+  rho * sd(y.perp) * y + y.perp * sd(y) * sqrt(1 - rho^2)
+}</code></pre>
+<p>In this function <em>x</em> is our Facebook uncorrelated scenario , <em>rho</em> is the correlation level and <em>y</em> is the Google scenario as provided by the third party.</p>
+<p>We apply this function imposing an 80% correlation</p>
+<pre class="r"><code>Returns %&lt;&gt;%  
+  mutate(fb_correlated = complement(.$google_returns,0.8, .$fb_returns))
+
+cor(Returns$google_returns, Returns$fb_correlated)</code></pre>
+<pre><code>## [1] 0.8</code></pre>
+<p><img src="/post/31_01_2018_simulations_files/figure-html/Add_Correlation_Graph-1.png" width="672" /></p>
+<p>There is just one last thing to do: compare the distributions of the two Facebook simulations</p>
+<pre class="r"><code>Returns %&gt;% 
+  select(contains(&quot;fb&quot;)) %&gt;% 
+  gather(simulation_type, simulation_value) %&gt;% 
+  ggplot(aes(x = simulation_value, colour = simulation_type)) +
+  geom_density() +
+  scale_x_continuous(labels = percent) + 
+  labs(title = &quot;Facebook Shares&#39; simulations&quot;) +
+  xlab(&quot;One year forward return&quot;) + 
+  ylab(&quot;Density&quot;)</code></pre>
+<p><img src="/post/31_01_2018_simulations_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
+<p>We can notice that the marginal distribution of the correlated scenario is much different from the original one.</p>
+<p>There is therefore one additional step before we finish: we need to rescale the marginal distribution.</p>
+<pre class="r"><code>Rescaled_fb_correlated &lt;- Returns %&gt;%
+  select(contains(&quot;correlated&quot;)) %&gt;%
+  scale() %&gt;% 
+  multiply_by(0.3) %&gt;% 
+  add(0.05)
+
+Returns %&lt;&gt;% 
+  mutate(fb_correlated_scaled = Rescaled_fb_correlated)</code></pre>
+<p>We can now check that the the marginals are comparable and that the correlation structure is still at the desired level</p>
+<pre class="r"><code>Returns %&gt;% 
+  select(contains(&quot;fb&quot;)) %&gt;% 
+  gather(simulation_type, simulation_value) %&gt;% 
+  ggplot(aes(x = simulation_value, colour = simulation_type)) +
+  geom_density() +
+  scale_x_continuous(labels = percent) + 
+  labs(title = &quot;Facebook Shares&#39; simulations&quot;) +
+  xlab(&quot;One year forward return&quot;) + 
+  ylab(&quot;Density&quot;)</code></pre>
+<p><img src="/post/31_01_2018_simulations_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<pre class="r"><code>cor(Returns$google_returns, Returns$fb_correlated)</code></pre>
+<pre><code>## [1] 0.8</code></pre>
+<p>The new Facebook scenario is now both correlated and in line with the density we want.</p>
+
+    </p>
+    
+    <hr>
+  </div>
+
+  
+
+
+        </div>
+          <div class="medium-3 columns" data-sticky-container>
+  <div class="sticky" data-sticky data-anchor="content">
+
+  
+
+  
+
+  <h4>Recent Posts</h4>
+  <ul>
+    
+      <li><a href="/2018/01/generate-scenarios-correlated-to-existing-ones/">
+        Generate scenarios correlated to existing ones
+      </a></li>
+    
+      <li><a href="/2018/01/my-first-post/">
+        My first post
+      </a></li>
+    
+      <li><a href="/post/">
+        Posts
+      </a></li>
+    
+  </ul>
+
+  
+    <h4>Links</h4>
+    <ul>
+      
+        <li><a href="http://www.r-bloggers.com">
+          R-bloggers
+        </a></li>
+      
+    </ul>
+  
+
+  </div>
+</div>
+
+      </div>
+    </main>
+
+    <footer class="blog-footer">
+      <div class="row column">
+        <p>
+          
+          Blog template created by <a href="hhttps://github.com/zurb">@zurb</a>, ported to Hugo by <a href='https://github.com/htkoca'>github.com/htko89</a>.
+          
+        </p>
+        <p>
+          <a href="/2018/01/generate-scenarios-correlated-to-existing-ones/#">Back to top</a>
+        </p>
+      </div>
+    </footer>
+
+  <foot>
+
+    <script src="/js/app.js"></script>
+
+  </foot>
+  </body>
+</html>

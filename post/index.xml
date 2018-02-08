@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Posts on The CuRious Risk Manager</title>
+    <link>/post/</link>
+    <description>Recent content in Posts on The CuRious Risk Manager</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 29 Jan 2018 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="/post/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Generate scenarios correlated to existing ones</title>
+      <link>/2018/01/generate-scenarios-correlated-to-existing-ones/</link>
+      <pubDate>Mon, 29 Jan 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/2018/01/generate-scenarios-correlated-to-existing-ones/</guid>
+      <description>In quantitative finance we often look at simulations of some market risk factors like equity returns or interest rate changes.
+There are many third party companies who specialize in the historical calibration of such variables and provide simulations of future expected outcomes to the companies who require them.
+For example, let’s suppose that we receive the expected returns of the Google shares as per the following distribution
+# This modelling is given by the third party and in theory we don&amp;#39;t know it google &amp;lt;- rnorm(10000, mean = 0.</description>
+    </item>
+    
+    <item>
+      <title>My first post</title>
+      <link>/2018/01/my-first-post/</link>
+      <pubDate>Mon, 22 Jan 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/2018/01/my-first-post/</guid>
+      <description>Welcome to my blog! I have been working in Financial Risk Management for the last 10+ years in financial instiutions for both Funds and Insurance.
+For the last two years I have started to code quite regularly in R and I have now decided to open my little blog to share any insight I will get during my studying.
+I will write about risk management and financial applications.
+Enough talking about me…let’s start!</description>
+    </item>
+    
+  </channel>
+</rss>
