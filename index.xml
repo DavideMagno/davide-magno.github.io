@@ -58,7 +58,7 @@ ggplot(data = fb, aes(x = fb_returns)) +
   as.tibble()
 
 cor(Returns$fb_returns, Returns$google_returns)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;## [1] 0.004776558&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## [1] 0.006437067&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;&lt;img src=&#34;/post/31_01_2018_simulations_files/figure-html/Correlation_graph-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;We can notice that performing the simple simulation doesn’t allow us to impose a correlation structure with the data provided by the third party provider.&lt;/p&gt;
 &lt;p&gt;How can we generate a random variable with a defined correlation to an existing one? A very elegant solution was provided by user &lt;strong&gt;whuber&lt;/strong&gt; at the following link &lt;a href=&#34;https://stats.stackexchange.com/a/313138&#34; class=&#34;uri&#34;&gt;https://stats.stackexchange.com/a/313138&lt;/a&gt; and by using the following function&lt;/p&gt;
